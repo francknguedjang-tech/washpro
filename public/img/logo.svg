@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 60" width="220" height="60">
+  <!-- Droplet -->
+  <path d="M30 6C30 6 7 28 7 42C7 54.7 17.3 65 30 65C42.7 65 53 54.7 53 42C53 28 30 6 30 6Z" fill="#3b82f6" />
+  <!-- Shine/Reflection line -->
+  <line x1="16" y1="34" x2="23" y2="21" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+  <!-- Text -->
+  <text x="65" y="45" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-size="34" font-weight="800" fill="#3b82f6" letter-spacing="-1.5">washpro</text>
+</svg>

@@ -1,0 +1,60 @@
+les users stories de mon application de gestion et suivie d'un pressing
+🎯 1️⃣ CLIENT
+🎭 Rôle
+Personne qui dépose son linge et suit l’évolution.
+📌 User Stories
+🔹 Authentification
+En tant que client, je veux pouvoir m'inscrire et me connecter à l’application
+En tant que client, je veux pouvoir réinitialiser mon mot de passe via email si je l’oublie.
+🔹 Dépôt
+En tant que client, je veux consulter l’historique de mes dépôts afin de suivre mes vêtements.
+En tant que client, je veux voir le détail d’un dépôt (date, type de linge, montant).
+🔹 Suivi
+En tant que client, je veux voir l’état de mon linge (En attente, En traitement, Prêt, Livré).
+En tant que client, je veux recevoir une notification lorsque mon linge est prêt.
+🔹 Paiement
+En tant que client, je veux voir le montant à payer pour un dépôt.
+En tant que client, je veux voir mon reçu après paiement.
+🎯 2️⃣ RÉCEPTIONNISTE
+🎭 Rôle
+Intermédiaire entre client et pressing.
+📌 User Stories
+🔹 Gestion client
+En tant que réceptionniste, je veux créer un compte client lors d’un dépôt si il n'existe pas
+En tant que réceptionniste, je veux consulter la liste des clients.   aussi voir les  statistique(nombre de depot, meilleur client, nombre de personne n'ayant pas payer)                                                         
+🔹 Gestion dépôt
+En tant que réceptionniste, je veux enregistrer un nouveau dépôt comme l'administrateur
+En tant que réceptionniste, je veux modifier l’état d’un dépôt.
+🔹 Paiement
+En tant que réceptionniste, je veux enregistrer un paiement.
+En tant que réceptionniste, je veux générer un reçu.
+🎯 3️⃣ TECHNICIEN PRESSING
+🎭 Rôle
+Employé qui traite les linges.
+📌 User Stories
+🔹 Consultation
+En tant que technicien, je veux voir la liste des dépôts en attente.
+En tant que technicien, je veux voir les détails des linges à traiter.
+🔹 Traitement
+En tant que technicien, je veux changer l’état d’un dépôt :
+En traitement
+Terminé
+🔹 Notification
+En tant que technicien, je veux signaler qu’un dépôt est prêt afin que le client soit notifié.
+4️ ADMINISTRATEUR
+ Rôle
+Responsable global du système.(donc avoir acce a tout les autres fonctionnaliter de d'autre des emploiyer)
+ User Stories
+ Gestion utilisateurs
+En tant qu’administrateur, je veux créer un compte réceptionniste.
+En tant qu’administrateur, je veux créer un compte technicien.
+En tant qu’administrateur, je veux activer ou désactiver un utilisateur.
+En tant qu’administrateur, je veux voir la liste de tous les utilisateurs.
+ Supervision
+En tant qu’administrateur, je veux voir tous les dépôts.
+En tant qu’administrateur, je veux voir les paiements.
+En tant qu’administrateur, je veux voir les statistiques (nombre de dépôts, revenus).
+en tant qu'administrateur, je veux avoir le rapport de chaque semaine sous forme de pdf
+En tant qu’administrateur, je veux pouvoir relancer les client par email
+ Configuration
+En tant qu’administrateur, je veux gérer les services et le prix (lavage, repassage, nettoyage à sec).
