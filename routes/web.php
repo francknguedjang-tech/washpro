@@ -5,7 +5,7 @@ use App\Http\Controllers\Authcontroller;
 use App\Http\Controllers\DepotController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\clientController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PaiementController;
 /*
@@ -117,9 +117,9 @@ Route::middleware(['auth'])->group(function() {
     Route::middleware(['role:admin,receptionniste'])->group(function(){
         
         // Clients
-        Route::resource('clients', clientController::class);
-        Route::get('/api/clients/recherche/{tel}', [clientController::class, 'rechercheBytel']);
-        Route::post('/admin/clients/{id}/notify', [clientController::class, 'sendNotification'])->name('clients.notify');
+        Route::resource('clients', ClientController::class);
+        Route::get('/api/clients/recherche/{tel}', [ClientController::class, 'rechercheBytel']);
+        Route::post('/admin/clients/{id}/notify', [ClientController::class, 'sendNotification'])->name('clients.notify');
 
         // Dépôts (Général)
         Route::get('/admin/depots', [DepotController::class, 'index'])->name('depots.index');

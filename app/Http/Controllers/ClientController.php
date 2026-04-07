@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\ClientCreatedMail;
 use App\Services\NotificationService;
 
-class clientController extends Controller
+class ClientController extends Controller
 {
     protected $notificationService;
 
