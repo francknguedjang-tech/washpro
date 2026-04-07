@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\depot;
-use App\Models\paiement;
+use App\Models\Depot;
+use App\Models\Paiement;
 use Carbon\Carbon;
 
 class ClientDashboardController extends Controller

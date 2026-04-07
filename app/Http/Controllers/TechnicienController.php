@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\depot;
+use App\Models\Depot;
 
 class TechnicienController extends Controller
 {

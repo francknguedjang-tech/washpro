@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\depot;
-use App\Models\paiement;
+use App\Models\Depot;
+use App\Models\Paiement;
 use Carbon\Carbon;
 
 class AdminController extends Controller

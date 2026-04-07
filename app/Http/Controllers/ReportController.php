@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\depot;
-use App\Models\paiement;
+use App\Models\Depot;
+use App\Models\Paiement;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;

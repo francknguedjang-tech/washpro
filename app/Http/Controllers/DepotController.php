@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
-use App\Models\depot;
+use App\Models\Depot;
 use App\Models\User;
-use App\Models\linge;
-use App\Models\code_acces;
+use App\Models\Linge;
+use App\Models\Code_acces;
 use App\Mail\DepotConfirmationMail;
 use App\Mail\DepotStatusUpdatedMail;
 use App\Mail\PaiementRecuMail;

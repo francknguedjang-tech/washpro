@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\depot;
-use App\Models\paiement;
+use App\Models\Depot;
+use App\Models\Paiement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PaiementRecuMail;
