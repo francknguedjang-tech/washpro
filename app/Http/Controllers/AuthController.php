@@ -161,13 +161,11 @@ class AuthController extends Controller
             // juste parce que le serveur mail est momentanément en panne.
             // TEMP FIX: Commenté pour éviter que le serveur Alwaysdata ne tourne dans le vide
             // à cause du blocage SMTP.
-            /* 
             try {
                 \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\WelcomeClientMail($user));
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error("Erreur lors de l'envoi de l'email de bienvenue : " . $e->getMessage());
-            } 
-            */
+            }
 
             // Connexion automatique du nouveau client après sa création
             Auth::login($user);
