@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Authcontroller;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepotController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ReportController;
