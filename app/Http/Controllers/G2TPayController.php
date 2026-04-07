@@ -23,13 +23,22 @@ class G2TPayController extends Controller
         $apiKey = env('G2TPAY_API_KEY');
         $baseUrl = env('G2TPAY_BASE_URL', 'https://g2tpay.net/integrate/pay');
 
+        // Générer une référence unique pour cette tentative de paiement spécifique
+        $transactionReference = 'WP-' . now()->format('YmdHis') . '-' . $depot->id;
+
         // Construire l'URL de redirection G2TPay selon leur documentation
         $params = [
-            'api_key' => $apiKey,
-            'amount' => $depot->reste_a_payer,
-            'description' => 'Facture N ' . $depot->reference,
-            'return_url' => route('client.paiement.retour', ['depot_id' => $depot->id]),
+            'api_key'     => $apiKey,
+            'amount'      => intval($depot->reste_a_payer), // Toujours forcer l'entier pour G2TPay/FCFA
+            'description' => 'Facture ' . $depot->reference,
+            'reference'   => $transactionReference, // Référence de transaction pour G2TPay
+            'return_url'  => route('client.paiement.retour', ['depot_id' => $depot->id]),
+            'email'       => auth()->user()->email, // Optionnel mais aide G2TPay
+            'phone'       => auth()->user()->telephone, // Optionnel mais aide G2TPay
         ];
+
+        // LOG pour débogage (Visible dans storage/logs/laravel.log)
+        Log::info("Initiation Paiement G2TPay - Depot: " . $depot->id . " - Réf: " . $transactionReference);
 
         $redirectUrl = $baseUrl . '?' . http_build_query($params);
 
