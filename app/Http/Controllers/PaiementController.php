@@ -188,7 +188,7 @@ class PaiementController extends Controller
         return back()->with('info', 'Ce dépôt est déjà payé.');
     }
     
-    private function updateDepotPaymentStatus(depot $depot)
+    private function updateDepotPaymentStatus(Depot $depot)
     {
         $reste = $depot->reste_a_payer; 
         $total_paye = $depot->paiements()->sum('montant');
