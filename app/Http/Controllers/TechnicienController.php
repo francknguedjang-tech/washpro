@@ -27,22 +27,22 @@ class TechnicienController extends Controller
     public function dashboard()
     {
         // Récupère la liste de tous les dépôts qui nécessitent une intervention (statut: en cours)
-        $depotsEnAttente = depot::with(['linges.service'])
+        $depotsEnAttente = Depot::with(['linges.service'])
             ->where('etat', 'en cours')
             ->orderBy('date_depot', 'asc') 
             ->get();
             
-        $recentCompleted = depot::with(['linges.service'])
+        $recentCompleted = Depot::with(['linges.service'])
             ->whereIn('etat', ['pret', 'recuperer'])
             ->orderBy('updated_at', 'desc')
             ->take(5)
             ->get();
 
         $stats = [
-            'en_attente' => depot::where('etat', 'en cours')->count(),
-            'prets_aujourdhui' => depot::where('etat', 'pret')->whereDate('updated_at', today())->count(),
-            'termines' => depot::where('etat', 'recuperer')->count(),
-            'poids_aujourdhui' => depot::with('linges.service')
+            'en_attente' => Depot::where('etat', 'en cours')->count(),
+            'prets_aujourdhui' => Depot::where('etat', 'pret')->whereDate('updated_at', today())->count(),
+            'termines' => Depot::where('etat', 'recuperer')->count(),
+            'poids_aujourdhui' => Depot::with('linges.service')
                                         ->whereIn('etat', ['pret', 'recuperer'])
                                         ->whereDate('updated_at', today())
                                         ->get()

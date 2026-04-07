@@ -32,7 +32,7 @@ class ClientDashboardController extends Controller
         
 
         // Récupération de l'historique complet des dépôts du client
-        $depots = depot::where('client_id', $user->id)
+        $depots = Depot::where('client_id', $user->id)
             ->with(['linges.service', 'paiements'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -49,7 +49,7 @@ class ClientDashboardController extends Controller
         $chartData = ['labels' => [], 'data' => []];
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $count = depot::where('client_id', $user->id)
+            $count = Depot::where('client_id', $user->id)
                 ->whereYear('created_at', $month->year)
                 ->whereMonth('created_at', $month->month)
                 ->count();
@@ -58,12 +58,12 @@ class ClientDashboardController extends Controller
         }
 
         // Récupération sécurisée de l'historique des paiements
-        $paiements = paiement::whereHas('depot', function($query) use ($user) {
+        $paiements = Paiement::whereHas('depot', function($query) use ($user) {
             $query->where('client_id', $user->id);
         })->with('depot')->orderBy('date_paiement', 'desc')->get();
 
         // Récupération des dernières notifications non lues
-        $notifications = \App\Models\notification::where('user_id', $user->id)
+        $notifications = \App\Models\Notification::where('user_id', $user->id)
                             ->where('lu', false)
                             ->orderBy('created_at', 'desc')
                             ->take(5)
@@ -78,7 +78,7 @@ class ClientDashboardController extends Controller
      */
     public function genererRecu($id)
     {
-        $depot = depot::with(['client', 'paiements', 'service', 'receptionniste'])
+        $depot = Depot::with(['client', 'paiements', 'service', 'receptionniste'])
                       ->where('client_id', Auth::id())
                       ->findOrFail($id);
                       

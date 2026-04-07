@@ -30,7 +30,7 @@ class ReceptionnisteController extends Controller
      */
     public function dashboard()
     {
-        $depotsCount = depot::count();
+        $depotsCount = Depot::count();
         $clientsCount = User::where('role', 'client')->count();
         $paiementsTotal = Paiement::sum('montant');
         
@@ -39,7 +39,7 @@ class ReceptionnisteController extends Controller
         $paiementsTotal = Paiement::sum('montant');
         
         // Calcul du nombre de clients ayant des factures non soldées
-        $unpaidClientsCount = depot::where('etat_paiement', '!=', 'payé')
+        $unpaidClientsCount = Depot::where('etat_paiement', '!=', 'payé')
                                    ->pluck('client_id')
                                    ->unique()
                                    ->count();
@@ -52,7 +52,7 @@ class ReceptionnisteController extends Controller
             ->take(5)
             ->get();
 
-        $latestDepots = depot::with(['client', 'linges.service'])
+        $latestDepots = Depot::with(['client', 'linges.service'])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();

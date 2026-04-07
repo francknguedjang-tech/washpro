@@ -19,7 +19,7 @@ class NotificationService
         $users = User::where('role', $role)->where('actif', true)->get();
 
         foreach ($users as $user) {
-            notification::create([
+            Notification::create([
                 'user_id' => $user->id,
                 'message' => $message,
                 'date_envoi' => Carbon::now()->toDateString(),
@@ -46,7 +46,7 @@ class NotificationService
     public function sendToUser(User $user, string $message)
     {
         if ($user->actif) {
-            notification::create([
+            Notification::create([
                 'user_id' => $user->id,
                 'message' => $message,
                 'date_envoi' => Carbon::now()->toDateString(),

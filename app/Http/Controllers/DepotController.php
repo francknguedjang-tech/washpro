@@ -33,7 +33,7 @@ class DepotController extends Controller
      */
     public function index(Request $request)
     {
-        $query = depot::with(['client', 'linges.service']);
+        $query = Depot::with(['client', 'linges.service']);
 
         if ($request->filled('date')) {
             $query->whereDate('date_depot', $request->date);
@@ -61,7 +61,7 @@ class DepotController extends Controller
      */
     public function show($id)
     {
-        $depot = depot::with(['client', 'linges.service', 'receptionniste', 'paiements'])->findOrFail($id);
+        $depot = Depot::with(['client', 'linges.service', 'receptionniste', 'paiements'])->findOrFail($id);
         return view('admin.depots.show', compact('depot'));
     }
 
@@ -70,7 +70,7 @@ class DepotController extends Controller
      */
     public function edit($id)
     {
-        $depot = depot::with('linges')->findOrFail($id);
+        $depot = Depot::with('linges')->findOrFail($id);
         $services = Service::all();
         return view('admin.depots.edit', compact('depot', 'services'));
     }
@@ -89,7 +89,7 @@ class DepotController extends Controller
             'articles.*.quantite' => 'required|numeric|min:0.1',
         ]);
 
-        $depot = depot::findOrFail($id);
+        $depot = Depot::findOrFail($id);
         
         DB::beginTransaction();
         try {
@@ -122,7 +122,7 @@ class DepotController extends Controller
                     $montantLigne = $quantite * $prixUnitaire;
                 }
 
-                linge::create([
+                Linge::create([
                     'description' => $item['description'],
                     'quantite' => $quantite,
                     'depot_id' => $depot->id,
@@ -154,7 +154,7 @@ class DepotController extends Controller
             return back()->with('error', 'Action non autorisée.');
         }
 
-        $depot = depot::findOrFail($id);
+        $depot = Depot::findOrFail($id);
         // Supprimer toutes les liaisons (articles et paiements) pour garder la BDD propre
         $depot->linges()->delete();
         $depot->paiements()->delete();
@@ -195,7 +195,7 @@ class DepotController extends Controller
         try {
             $totalDepot = 0;
 
-            $depot = depot::create([
+            $depot = Depot::create([
                 'date_depot' => now(),
                 'etat' => 'en cours',
                 'prix_total' => 0,
@@ -227,7 +227,7 @@ class DepotController extends Controller
                     $montantLigne = $quantite * $prixUnitaire;
                 }
 
-                linge::create([
+                Linge::create([
                     'description' => $item['description'],
                     'quantite' => $quantite,
                     'depot_id' => $depot->id,
@@ -249,7 +249,7 @@ class DepotController extends Controller
                     throw new \Exception('Le montant saisi. ('.$montantPaye.' F) depasse le total de la facture ('.$totalDepot.' F).');
                 }
                 
-                \App\Models\paiement::create([
+                \App\Models\Paiement::create([
                     'depot_id' => $depot->id,
                     'montant' => $montantPaye,
                     'mode_paiement' => $request->mode_paiement ?? 'cache',
@@ -268,10 +268,10 @@ class DepotController extends Controller
             $client = User::find($request->client_id);
             $codeStr = null;
             if (!$client->password_changed) {
-                $code = code_acces::where('user_id', $client->id)->where('is_used', false)->first();
+                $code = Code_acces::where('user_id', $client->id)->where('is_used', false)->first();
                 if (!$code) {
                     $codeStr = strtoupper(Str::random(6));
-                    code_acces::create([
+                    Code_acces::create([
                         'user_id' => $client->id,
                         'code' => $codeStr,
                         'is_used' => false
@@ -300,7 +300,7 @@ class DepotController extends Controller
             DB::commit();
 
             // Notification for the client
-            \App\Models\notification::create([
+            \App\Models\Notification::create([
                 'user_id' => $depot->client_id,
                 'message' => 'Votre dépôt #' . str_pad($depot->id, 5, '0', STR_PAD_LEFT) . ' a bien été enregistré. Merci de votre confiance !',
                 'date_envoi' => now(),
@@ -321,14 +321,14 @@ class DepotController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $depot = depot::findOrFail($id);
+        $depot = Depot::findOrFail($id);
         $oldStatus = $depot->etat;
         $newStatus = $request->status;
 
         $depot->update(['etat' => $newStatus]);
 
         if ($newStatus == 'pret' && $oldStatus != 'pret') {
-            \App\Models\notification::create([
+            \App\Models\Notification::create([
                 'user_id' => $depot->client_id,
                 'message' => "Votre dépôt #" . str_pad($depot->id, 5, '0', STR_PAD_LEFT) . " est prêt !",
                 'date_envoi' => now(),
@@ -358,7 +358,7 @@ class DepotController extends Controller
 
     public function genererFacture($id)
     {
-        $depot = depot::with(['client', 'linges.service', 'paiements', 'receptionniste'])->findOrFail($id);
+        $depot = Depot::with(['client', 'linges.service', 'paiements', 'receptionniste'])->findOrFail($id);
         return view('admin.depots.facture', compact('depot'));
     }
 }

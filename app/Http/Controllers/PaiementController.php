@@ -30,7 +30,7 @@ class PaiementController extends Controller
     {
         // On initialise la requête en chargeant les paiements avec leurs dépôts et clients associés (Eager Loading)
         // Cela permet d'optimiser les performances de la base de données.
-        $query = paiement::with(['depot', 'depot.client']);
+        $query = Paiement::with(['depot', 'depot.client']);
         
         // 1. Filtrage par mot-clé (numéro de dépôt, nom, prénom ou téléphone du client)
         if ($request->has('q') && $request->q != '') {
@@ -62,7 +62,7 @@ class PaiementController extends Controller
 
     public function depotPaiements($id)
     {
-        $depot = depot::findOrFail($id);
+        $depot = Depot::findOrFail($id);
         $paiements = $depot->paiements()->orderBy('date_paiement', 'desc')->get();
         return view('paiements.depot_paiements', compact('depot', 'paiements'));
     }
@@ -84,7 +84,7 @@ class PaiementController extends Controller
             'mode_paiement' => 'required|in:cache,orange_money,mobile_money', // Seuls ces modes sont acceptés
         ]);
 
-        $depot = depot::findOrFail($request->depot_id);
+        $depot = Depot::findOrFail($request->depot_id);
         
         // 2. Vérification de sécurité : le client ne peut pas payer plus que ce qu'il doit
         // C'est une protection très importante contre les erreurs de frappe (ex: taper 50000 au lieu de 5000)
@@ -93,7 +93,7 @@ class PaiementController extends Controller
         }
 
         // 3. Création officielle du paiement en base de données
-        paiement::create([
+        Paiement::create([
             'depot_id' => $depot->id,
             'montant' => $request->montant,
             'mode_paiement' => $request->mode_paiement,
@@ -115,7 +115,7 @@ class PaiementController extends Controller
         }
 
         // 5. Création d'une notification visible sur l'espace client "WashPro"
-        \App\Models\notification::create([
+        \App\Models\Notification::create([
             'user_id' => $depot->client_id,
             'message' => 'Un paiement de ' . number_format($request->montant, 0, ',', ' ') . ' F a été enregistré sur votre dépôt #' . str_pad($depot->id, 5, '0', STR_PAD_LEFT) . '.',
             'date_envoi' => now(),
@@ -144,13 +144,13 @@ class PaiementController extends Controller
      */
     public function marquerPaye($id)
     {
-        $depot = depot::findOrFail($id);
+        $depot = Depot::findOrFail($id);
         $reste = $depot->reste_a_payer;
         
         // S'il reste effectivement de l'argent à payer sur cette facture
         if ($reste > 0) {
             // 1. On crée le paiement en "cache" pour le montant exact restant
-            paiement::create([
+            Paiement::create([
                 'depot_id' => $depot->id,
                 'montant' => $reste,
                 'mode_paiement' => 'cache',
@@ -171,7 +171,7 @@ class PaiementController extends Controller
             }
 
             // 4. Notification pour le tableau de bord du client
-            \App\Models\notification::create([
+            \App\Models\Notification::create([
                 'user_id' => $depot->client_id,
                 'message' => 'Un paiement de ' . number_format($reste, 0, ',', ' ') . ' F a été enregistré sur votre dépôt #' . str_pad($depot->id, 5, '0', STR_PAD_LEFT) . '.',
                 'date_envoi' => now(),
@@ -204,7 +204,7 @@ class PaiementController extends Controller
 
     public function destroy($id)
     {
-        $paiement = paiement::findOrFail($id);
+        $paiement = Paiement::findOrFail($id);
         $depot = $paiement->depot;
         
         $paiement->delete();
@@ -216,7 +216,7 @@ class PaiementController extends Controller
 
     public function genererRecu($id)
     {
-        $depot = depot::with(['client', 'paiements', 'service', 'receptionniste'])->findOrFail($id);
+        $depot = Depot::with(['client', 'paiements', 'service', 'receptionniste'])->findOrFail($id);
         return view('paiements.recu', compact('depot'));
     }
 }

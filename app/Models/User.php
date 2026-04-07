@@ -50,16 +50,16 @@ class User extends Authenticatable
     ];
     public function depots()
     {
-        return $this->hasMany(depot::class, 'client_id');
+        return $this->hasMany(Depot::class, 'client_id');
     }
 
     public function notifications()
     {
-        return $this->hasMany(notification::class, 'user_id');
+        return $this->hasMany(Notification::class, 'user_id');
     }
 
     public function codeacces()
     {
-        return $this->hasOne(notification::class, 'user_id'); // Assuming this refers to notification or another table. Correcting the name to hasOne.
+        return $this->hasOne(Notification::class, 'user_id'); // Assuming this refers to notification or another table. Correcting the name to hasOne.
     }
 }

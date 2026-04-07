@@ -14,7 +14,7 @@ class G2TPayController extends Controller
      */
     public function initier($id)
     {
-        $depot = depot::findOrFail($id);
+        $depot = Depot::findOrFail($id);
 
         if ($depot->reste_a_payer <= 0) {
             return redirect()->back()->with('error', 'Ce dépôt est déjà entièrement payé.');
@@ -51,13 +51,13 @@ class G2TPayController extends Controller
             return redirect()->route('client.dashboard')->with('error', 'Paramètres de retour invalides.');
         }
 
-        $depot = depot::findOrFail($depotId);
+        $depot = Depot::findOrFail($depotId);
 
         // Analyse du statut de la transaction
         if ($status === 'success' || $status === 'succès' || $status === 'successful') {
             
             // Protection : Vérifier qu'on a pas déjà enregistré ce paiement
-            $dejaPaye = paiement::where('mode_paiement', 'g2tpay')
+            $dejaPaye = Paiement::where('mode_paiement', 'g2tpay')
                                 ->where('date_paiement', now()->toDateString())
                                 ->where('montant', $depot->reste_a_payer)
                                 ->where('depot_id', $depotId)
@@ -67,7 +67,7 @@ class G2TPayController extends Controller
                 // Enregistrer ce paiement
                 $montantCapture = $depot->reste_a_payer;
                 
-                paiement::create([
+                Paiement::create([
                     'depot_id' => $depotId,
                     'montant' => $montantCapture,
                     'mode_paiement' => 'g2tpay', // Online payment identifier

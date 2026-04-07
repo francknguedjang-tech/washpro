@@ -5,20 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class linge extends Model
+class Paiement extends Model
 {
     use HasFactory;
     public $timestamps = false;
+
     protected $fillable = [
-        'description',
-        'quantite',
         'depot_id',
-        'service_id',
-        'prix_unitaire'
+        'montant',
+        'mode_paiement',
+        'date_paiement'
     ];
 
-    public function service()
+    public function depot()
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Depot::class);
     }
 }

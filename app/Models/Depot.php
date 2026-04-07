@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class depot extends Model
+class Depot extends Model
 {
     use HasFactory;
 
@@ -48,14 +48,14 @@ class depot extends Model
     }
     public function linges()
     {
-        return $this->hasMany(linge::class);
+        return $this->hasMany(Linge::class);
     }
     public function paiements()
     {
-        return $this->hasMany(paiement::class, 'depot_id');
+        return $this->hasMany(Paiement::class, 'depot_id');
     }
 
     public function service(){
-        return $this->belongsTo(service::class, 'service_id');
+        return $this->belongsTo(Service::class, 'service_id');
     }
 }

@@ -24,8 +24,8 @@ class ReportController extends Controller
     public function daily()
     {
         $today = Carbon::today();
-        $depots = depot::whereDate('date_depot', $today)->with(['client', 'linges.service'])->get();
-        $paiements = paiement::whereDate('date_paiement', $today)->with('depot.client')->get();
+        $depots = Depot::whereDate('date_depot', $today)->with(['client', 'linges.service'])->get();
+        $paiements = Paiement::whereDate('date_paiement', $today)->with('depot.client')->get();
 
         $totalDepots = $depots->sum('prix_total');
         $totalRevenu = $paiements->sum('montant');
@@ -41,11 +41,11 @@ class ReportController extends Controller
         $month = $request->get('month', Carbon::now()->month);
         $year = $request->get('year', Carbon::now()->year);
 
-        $depots = depot::whereMonth('date_depot', $month)
+        $depots = Depot::whereMonth('date_depot', $month)
             ->whereYear('date_depot', $year)
             ->get();
 
-        $paiements = paiement::whereMonth('date_paiement', $month)
+        $paiements = Paiement::whereMonth('date_paiement', $month)
             ->whereYear('date_paiement', $year)
             ->get();
 
@@ -121,7 +121,7 @@ class ReportController extends Controller
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
-        $revenues = paiement::whereBetween('date_paiement', [$startDate, $endDate])
+        $revenues = Paiement::whereBetween('date_paiement', [$startDate, $endDate])
             ->select(
                 DB::raw('DATE(date_paiement) as date'),
                 DB::raw('SUM(montant) as total')

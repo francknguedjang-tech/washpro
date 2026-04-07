@@ -27,7 +27,7 @@ class ClientProfileController extends Controller
         $user = Auth::user();
         
         // Fetch unread notifications for navbar
-        $notifications = \App\Models\notification::where('user_id', $user->id)
+        $notifications = \App\Models\Notification::where('user_id', $user->id)
             ->where('lu', false)
             ->orderBy('created_at', 'desc')
             ->take(5)
@@ -77,7 +77,7 @@ class ClientProfileController extends Controller
             $user->password = Hash::make($request->new_password);
             
             // Notification for password change security
-            \App\Models\notification::create([
+            \App\Models\Notification::create([
                 'user_id' => $user->id,
                 'message' => 'Votre mot de passe a été modifié avec succès.',
                 'date_envoi' => now(),
@@ -98,7 +98,7 @@ class ClientProfileController extends Controller
         $user = Auth::user();
         
         // Fetch unread notifications for navbar
-        $notifications = \App\Models\notification::where('user_id', $user->id)
+        $notifications = \App\Models\Notification::where('user_id', $user->id)
             ->where('lu', false)
             ->orderBy('created_at', 'desc')
             ->take(5)

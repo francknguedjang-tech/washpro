@@ -162,7 +162,7 @@ class clientController extends Controller
 
         $client = \App\Models\User::where('role', 'client')->findOrFail($id);
         
-        \App\Models\notification::create([
+        \App\Models\Notification::create([
             'user_id' => $client->id,
             'message' => $request->message,
             'date_envoi' => now(),
