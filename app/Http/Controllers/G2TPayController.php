@@ -10,16 +10,21 @@ use Illuminate\Support\Facades\Log;
 class G2TPayController extends Controller
 {
     /**
-     * Initialise le paiement G2TPay et redirige le client.
+     * Initialise le paiement G2TPay avec un montant choisi par le client.
      */
-    public function initier($id)
+    public function initier(Request $request, $id)
     {
         $depot = Depot::findOrFail($id);
 
-        if ($depot->reste_a_payer <= 0) {
-            return redirect()->back()->with('error', 'Ce dépôt est déjà entièrement payé.');
-        }
+        // Validation du montant saisi par le client
+        $request->validate([
+            'montant' => 'required|numeric|min:100|max:' . $depot->reste_a_payer,
+        ], [
+            'montant.min' => 'Le montant minimum est de 100 F.',
+            'montant.max' => 'Le montant ne peut pas dépasser le reste à payer (' . $depot->reste_a_payer . ' F).',
+        ]);
 
+        $montantAPayer = intval($request->montant);
         $apiKey = env('G2TPAY_API_KEY');
         $baseUrl = env('G2TPAY_BASE_URL', 'https://g2tpay.net/integrate/pay');
 
@@ -29,20 +34,22 @@ class G2TPayController extends Controller
         // Construire l'URL de redirection G2TPay selon leur documentation
         $params = [
             'api_key'     => $apiKey,
-            'amount'      => intval($depot->reste_a_payer), // Toujours forcer l'entier pour G2TPay/FCFA
-            'description' => 'Facture ' . $depot->reference,
-            'reference'   => $transactionReference, // Référence de transaction pour G2TPay
-            'return_url'  => route('client.paiement.retour', ['depot_id' => $depot->id]),
-            'email'       => auth()->user()->email, // Optionnel mais aide G2TPay
-            'phone'       => auth()->user()->telephone, // Optionnel mais aide G2TPay
+            'amount'      => $montantAPayer,
+            'description' => 'Paiement Facture ' . $depot->reference,
+            'reference'   => $transactionReference, 
+            'return_url'  => route('client.paiement.retour', [
+                'depot_id' => $depot->id,
+                'amount_captured' => $montantAPayer // On transmet le montant attendu pour le retour
+            ]),
+            'email'       => auth()->user()->email,
+            'phone'       => auth()->user()->telephone,
         ];
 
-        // LOG pour débogage (Visible dans storage/logs/laravel.log)
-        Log::info("Initiation Paiement G2TPay - Depot: " . $depot->id . " - Réf: " . $transactionReference);
+        // Journalisation pour le débogage
+        Log::info("Initiation Paiement G2TPay - Depot: " . $depot->id . " - Réf: " . $transactionReference . " - Montant: " . $montantAPayer);
 
         $redirectUrl = $baseUrl . '?' . http_build_query($params);
 
-        // Envoyer l'utilisateur vers la page de G2TPay
         return redirect()->away($redirectUrl);
     }
 
@@ -51,10 +58,9 @@ class G2TPayController extends Controller
      */
     public function retour(Request $request)
     {
-        // G2TPay passe notamment les champs status, message_id, payment_id
         $status = strtolower($request->query('status', ''));
         $depotId = $request->query('depot_id');
-        $paymentId = $request->query('payment_id', 'INCONNU');
+        $montantCapture = intval($request->query('amount_captured', 0));
 
         if (!$depotId) {
             return redirect()->route('client.dashboard')->with('error', 'Paramètres de retour invalides.');
@@ -62,20 +68,19 @@ class G2TPayController extends Controller
 
         $depot = Depot::findOrFail($depotId);
 
-        // Analyse du statut de la transaction
+        // Si le paiement est un succès
         if ($status === 'success' || $status === 'succès' || $status === 'successful') {
             
-            // Protection : Vérifier qu'on a pas déjà enregistré ce paiement
+            // On vérifie si ce paiement exact (montant + dépôt) n'a pas déjà été enregistré aujourd'hui
+            // pour éviter les doublons en cas de rafraîchissement de page par le client.
             $dejaPaye = Paiement::where('mode_paiement', 'g2tpay')
                                 ->where('date_paiement', now()->toDateString())
-                                ->where('montant', $depot->reste_a_payer)
+                                ->where('montant', $montantCapture)
                                 ->where('depot_id', $depotId)
                                 ->exists();
 
-            if (!$dejaPaye && $depot->reste_a_payer > 0) {
-                // Enregistrer ce paiement
-                $montantCapture = $depot->reste_a_payer;
-                
+            if (!$dejaPaye && $montantCapture > 0) {
+                // Création de l'enregistrement de paiement
                 Paiement::create([
                     'depot_id' => $depotId,
                     'montant' => $montantCapture,
@@ -83,17 +88,20 @@ class G2TPayController extends Controller
                     'date_paiement' => now()->toDateString(),
                 ]);
 
-                // Actualiser le statut global du dépôt
-                $reste = $depot->prix_total - ($depot->paiements()->sum('montant') + $montantCapture);
-                if ($reste <= 0) {
+                // IMPORTANT : On rafraîchit les données du dépôt pour que le calcul 
+                // du "reste_a_payer" intègre le nouveau paiement immédiatement.
+                $depot->refresh();
+
+                // Mise à jour du statut global du dépôt
+                if ($depot->reste_a_payer <= 0) {
                     $depot->update(['etat_paiement' => 'payé']);
                 } else {
                     $depot->update(['etat_paiement' => 'partiel']);
                 }
 
-                return redirect()->route('client.dashboard')->with('success', 'Paiement en ligne validé avec succès ! Merci de votre confiance.');
+                return redirect()->route('client.dashboard')->with('success', 'Votre paiement de ' . $montantCapture . ' F a été validé avec succès !');
             } else {
-                return redirect()->route('client.dashboard')->with('success', 'Votre paiement a déjà été validé.');
+                return redirect()->route('client.dashboard')->with('success', 'Votre paiement a déjà été pris en compte.');
             }
 
         } elseif ($status === 'failed' || $status === 'echec') {
@@ -102,7 +110,6 @@ class G2TPayController extends Controller
             return redirect()->route('client.dashboard')->with('error', 'La session de paiement a expiré.');
         }
 
-        // Cas par défaut (Status invalide ou Annulation par l'utilisateur)
         return redirect()->route('client.dashboard')->with('error', 'Paiement annulé ou non certifié.');
     }
 }

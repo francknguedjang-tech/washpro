@@ -489,7 +489,15 @@
                                             @else
                                                 <div class="d-flex flex-column align-items-end gap-2">
                                                     <span class="text-danger bg-danger bg-opacity-10 rounded-pill px-3 py-2 d-inline-flex align-items-center shadow-sm border border-danger border-opacity-25 mb-1" style="letter-spacing: 0.5px;"><i class="bi bi-exclamation-circle-fill me-1"></i> {{ number_format($depot->reste_a_payer, 0, ',', ' ') }} F</span>
-                                                    <a href="{{ route('client.paiement.initier', $depot->id) }}" class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" style="font-size: 0.75rem;"><i class="bi bi-credit-card-fill me-1"></i> Payer en ligne</a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" 
+                                                            style="font-size: 0.75rem;"
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#paymentModal" 
+                                                            data-depot-id="{{ $depot->id }}" 
+                                                            data-reste="{{ $depot->reste_a_payer }}">
+                                                        <i class="bi bi-credit-card-fill me-1"></i> Payer en ligne
+                                                    </button>
                                                 </div>
                                             @endif
                                         </td>
@@ -593,12 +601,67 @@
 
     </div>
 
+    <!-- Modale de Paiement Flexible -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white border-0 py-3">
+                    <h5 class="modal-title fw-bold" id="paymentModalLabel"><i class="bi bi-credit-card me-2"></i> Régler mon dépôt</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="paymentForm" method="POST" action="">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Montant à verser (FCFA)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-currency-exchange text-primary"></i></span>
+                                <input type="number" name="montant" id="paymentAmount" class="form-control bg-light border-start-0 fw-bold" placeholder="Ex: 2000" min="100" required>
+                            </div>
+                            <div class="form-text mt-2">
+                                Reste à payer : <span id="resteText" class="fw-bold text-primary">0</span> F
+                            </div>
+                        </div>
+                        <div class="alert alert-info border-0 rounded-4 small mb-0">
+                            <i class="bi bi-info-circle-fill me-2"></i> Vous pouvez payer la totalité ou une partie de votre facture en ligne.
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Confirmer le paiement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     
-    <!-- Chart JS Init -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Script pour gérer la modale de paiement
+            const paymentModal = document.getElementById('paymentModal');
+            if (paymentModal) {
+                paymentModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const depotId = button.getAttribute('data-depot-id');
+                    const reste = button.getAttribute('data-reste');
+                    
+                    const form = paymentModal.querySelector('#paymentForm');
+                    const input = paymentModal.querySelector('#paymentAmount');
+                    const resteText = paymentModal.querySelector('#resteText');
+                    
+                    // Mettre à jour l'action du formulaire avec l'ID du dépôt
+                    form.action = `/client/paiement/${depotId}/initier`;
+                    
+                    // Configurer le montant max et la valeur par défaut
+                    input.max = reste;
+                    input.value = reste;
+                    resteText.textContent = Number(reste).toLocaleString('fr-FR');
+                });
+            }
+
             const ctx = document.getElementById('usageChart').getContext('2d');
             
             const chartLabels = {!! json_encode($chartData['labels']) !!};

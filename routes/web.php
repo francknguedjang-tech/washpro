@@ -87,7 +87,7 @@ Route::middleware(['auth'])->group(function() {
         Route::get('/client/depots/{id}/recu', [App\Http\Controllers\ClientDashboardController::class, 'genererRecu'])->name('client.depots.recu');
         
         // Paiement en ligne G2TPay
-        Route::get('/client/paiement/{id}/initier', [\App\Http\Controllers\G2TPayController::class, 'initier'])->name('client.paiement.initier');
+        Route::post('/client/paiement/{id}/initier', [\App\Http\Controllers\G2TPayController::class, 'initier'])->name('client.paiement.initier');
         Route::get('/client/paiement/retour', [\App\Http\Controllers\G2TPayController::class, 'retour'])->name('client.paiement.retour');
         
         // Settings & Help
