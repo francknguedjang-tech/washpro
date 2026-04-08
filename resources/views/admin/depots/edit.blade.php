@@ -47,20 +47,6 @@
                                    class="form-control border-primary bg-primary bg-opacity-10 text-primary fw-medium rounded-3" 
                                    value="{{ date('Y-m-d\TH:i', strtotime($depot->date_retrait_prevue)) }}" required>
                         </div>
-
-                        <!-- Poids Global -->
-                        <div class="mt-4 pt-3 border-top">
-                            <label class="form-label small text-muted fw-bold d-flex align-items-center text-dark mb-2 text-uppercase">
-                                <i class="bi bi-scales me-2 text-primary"></i> Poids Total (kg)
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-primary border-2 border-end-0 text-primary px-3"><i class="bi bi-scales fs-5"></i></span>
-                                <input type="number" name="poid" id="poid" 
-                                       class="form-control border-primary border-2 border-start-0 fw-bold fs-4 py-2" 
-                                       placeholder="0.0" step="0.1" min="0" value="{{ $depot->poid }}"
-                                       style="background-color: #fff !important; color: #000 !important;">
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -112,9 +98,8 @@
                                         </td>
                                         <td class="py-3">
                                             <input type="number" name="articles[{{ $index }}][quantite]" 
-                                                   class="form-control form-control-sm border-2 border-primary text-center qte-input rounded-3 shadow-sm fw-bold fs-5" 
-                                                   value="{{ $linge->quantite }}" min="0.1" step="0.1" required
-                                                   style="background-color: #fff !important; color: #000 !important;">
+                                                   class="form-control form-control-sm border-0 bg-white text-center fw-bold text-dark qte-input rounded-3 shadow-sm" 
+                                                   value="{{ $linge->quantite }}" min="0.1" step="0.1" required>
                                         </td>
                                         <td class="py-3 text-end text-muted small">
                                             <span class="unit-price">{{ number_format($linge->prix_unitaire, 0, ',', ' ') }}</span> F
@@ -212,10 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </select>
                 </td>
                 <td class="py-3">
-                    <input type="number" name="articles[${articleCount}][quantite]" 
-                           class="form-control form-control-sm border-2 border-primary text-center qte-input rounded-3 shadow-sm fw-bold fs-5" 
-                           value="1" min="0.1" step="0.1" required
-                           style="background-color: #fff !important; color: #000 !important;">
+                    <input type="number" name="articles[${articleCount}][quantite]" class="form-control form-control-sm border-0 bg-white text-center fw-bold text-dark qte-input rounded-3 shadow-sm" value="1" min="0.1" step="0.1" required>
                 </td>
                 <td class="py-3 text-end text-muted small">
                     <span class="unit-price">0</span> F
@@ -315,13 +297,8 @@ document.addEventListener('DOMContentLoaded', function() {
     body { background-color: #f3f4f6; }
     .bg-light { background-color: #f8fafc !important; }
     .bg-light-subtle { background-color: #f1f5f9 !important; }
-    .card { border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important; }
-    .form-control:focus, .form-select:focus { 
-        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.15); 
-        border-color: #2563eb !important; 
-        background-color: #fff !important; 
-    }
-    input[type="number"] { color: #000 !important; font-weight: 800; }
+    .card { border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important; }
+    .form-control:focus, .form-select:focus { box-shadow: none; border-color: #3b82f6; background-color: #fff !important; }
     .table th { font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; border: none; }
     .btn-primary { background-color: #2563eb; border-color: #2563eb; }
     .btn-primary:hover { background-color: #1d4ed8; border-color: #1d4ed8; }
