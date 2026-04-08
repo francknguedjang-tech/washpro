@@ -79,7 +79,7 @@ class G2TPayController extends Controller
                 Paiement::create([
                     'depot_id' => $depotId,
                     'montant' => $montantCapture,
-                    'mode_paiement' => 'g2tpay', // Online payment identifier
+                    'mode_paiement' => 'g2tpay', // Identifiant de paiement en ligne
                     'date_paiement' => now()->toDateString(),
                 ]);
 
