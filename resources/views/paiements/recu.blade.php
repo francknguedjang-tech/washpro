@@ -5,13 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reçu - {{ $depot->reference }}</title>
     <style>
-        @page { margin: 0; size: 80mm auto; }
+        @page { 
+            margin: 0; 
+            size: 80mm auto;
+            orientation: portrait;
+        }
+        @media print {
+            @page {
+                size: portrait;
+                margin: 0;
+            }
+        }
         body { 
             font-family: 'Courier New', Courier, monospace; 
             background-color: #f8fafc; 
             margin: 0; 
             padding: 20px;
             color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .receipt-container {
             width: 80mm;

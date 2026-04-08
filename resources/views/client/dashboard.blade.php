@@ -368,7 +368,7 @@
         <div class="welcome-section">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h2 class="fw-bold mb-2">Bonjour, <span class="text-primary">{{ Auth::user()->prenom }}</span> ! 👋</h2>
+                    <h2 class="fw-bold mb-2">Bonjour, <span class="text-primary">{{ Auth::user()->prenom }}</span> ! </h2>
                     <p class="text-muted mb-0 fs-5">Voici un aperçu de vos activités récentes et de vos dépôts.</p>
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">

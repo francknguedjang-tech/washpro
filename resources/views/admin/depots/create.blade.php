@@ -60,13 +60,24 @@
                         </div>
 
                         <!-- Date Retrait -->
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label small text-muted fw-bold d-flex align-items-center text-primary mb-2 text-uppercase">
                                 Date de retrait prévue
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text border-primary bg-primary bg-opacity-10 text-primary border-end-0"><i class="bi bi-calendar-event"></i></span>
                                 <input type="datetime-local" name="date_retrait" id="date_retrait" class="form-control border-primary bg-primary bg-opacity-10 text-primary fw-medium border-start-0 ps-0" required>
+                            </div>
+                        </div>
+
+                        <!-- Poids Global -->
+                        <div class="mb-4">
+                            <label class="form-label small text-muted fw-bold d-flex align-items-center text-dark mb-2 text-uppercase">
+                                Poids Total (kg)
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-scales"></i></span>
+                                <input type="number" name="poid" id="poid" class="form-control bg-light border-start-0 fw-bold" placeholder="0.0" step="0.1" min="0">
                             </div>
                         </div>
 

@@ -47,6 +47,17 @@
                                    class="form-control border-primary bg-primary bg-opacity-10 text-primary fw-medium rounded-3" 
                                    value="{{ date('Y-m-d\TH:i', strtotime($depot->date_retrait_prevue)) }}" required>
                         </div>
+
+                        <!-- Poids Global -->
+                        <div class="mt-4 pt-3 border-top">
+                            <label class="form-label small text-muted fw-bold d-flex align-items-center text-dark mb-2 text-uppercase">
+                                <i class="bi bi-scales me-2"></i> Poids Total (kg)
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-scales"></i></span>
+                                <input type="number" name="poid" id="poid" class="form-control bg-light border-start-0 fw-bold" placeholder="0.0" step="0.1" min="0" value="{{ $depot->poid }}">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

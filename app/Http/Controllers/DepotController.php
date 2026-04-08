@@ -87,6 +87,7 @@ class DepotController extends Controller
             'articles.*.description' => 'required|string',
             'articles.*.service_id' => 'required|exists:services,id',
             'articles.*.quantite' => 'required|numeric|min:0.1',
+            'poid' => 'nullable|numeric|min:0',
         ]);
 
         $depot = Depot::findOrFail($id);
@@ -96,6 +97,7 @@ class DepotController extends Controller
             $totalDepot = 0;
             $depot->update([
                 'date_retrait_prevue' => $request->date_retrait,
+                'poid' => $request->poid ?? 0,
             ]);
 
             // Simple approach: Delete old linges and recreate them
@@ -187,6 +189,7 @@ class DepotController extends Controller
             'articles.*.description' => 'required|string',
             'articles.*.service_id' => 'required|exists:services,id',
             'articles.*.quantite' => 'required|numeric|min:0.1',
+            'poid' => 'nullable|numeric|min:0',
             'montant_paye' => 'nullable|numeric|min:0',
             'mode_paiement' => 'nullable|in:cache,orange_money,mobile_money',
         ]);
@@ -199,7 +202,7 @@ class DepotController extends Controller
                 'date_depot' => now(),
                 'etat' => 'en cours',
                 'prix_total' => 0,
-                'poid' => 0,
+                'poid' => $request->poid ?? 0,
                 'service_id' => $request->articles[0]['service_id'] ?? 1,
                 'client_id' => $request->client_id,
                 'receptionniste_id' => Auth::id(),
