@@ -81,7 +81,7 @@ class PaiementController extends Controller
         $request->validate([
             'depot_id' => 'required|exists:depots,id', // Le dépôt doit exister
             'montant' => 'required|numeric|min:1',     // Le montant doit être valide (>0)
-            'mode_paiement' => 'required|in:cache,orange_money,mobile_money', // Seuls ces modes sont acceptés
+            'mode_paiement' => 'required|in:cache,orange_money,mobile_money,g2tpay', // Seuls ces modes sont acceptés
         ]);
 
         $depot = Depot::findOrFail($request->depot_id);
