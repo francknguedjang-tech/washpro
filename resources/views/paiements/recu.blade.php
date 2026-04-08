@@ -77,8 +77,14 @@
     </style>
 </head>
 <body>
+    @php
+        $backUrl = '#';
+        if (Auth::check()) {
+            $backUrl = Auth::user()->role === 'client' ? route('client.dashboard') : route('paiements.index');
+        }
+    @endphp
     <div class="no-print" style="display: flex; gap: 10px; width: 80mm; margin: 20px auto; justify-content: space-between;">
-        <button onclick="window.history.back()" class="btn-print" style="margin: 0; background-color: #6c757d; flex: 1;">⬅️ RETOUR</button>
+        <a href="{{ $backUrl }}" class="btn-print" style="margin: 0; background-color: #6c757d; flex: 1; text-decoration: none;">⬅️ RETOUR</a>
         <button onclick="window.print()" class="btn-print" style="margin: 0; flex: 1;">🖨️ IMPRIMER</button>
     </div>
 
