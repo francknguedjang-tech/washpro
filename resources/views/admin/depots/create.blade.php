@@ -119,7 +119,7 @@
                                     <tr class="small text-muted text-uppercase fw-bold">
                                         <th class="ps-4 border-0 py-3" style="width: 45%;">Désignation</th>
                                         <th class="border-0 py-3" style="width: 20%;">Service</th>
-                                        <th class="border-0 text-center py-3" style="width: 90px;">Qté</th>
+                                        <th class="border-0 text-center py-3" style="width: 120px;">Qté</th>
                                         <th class="border-0 text-end py-3" style="width: 100px;">P.U</th>
                                         <th class="border-0 text-end py-3" style="width: 120px;">Total</th>
                                         <th class="pe-4 border-0 py-3" style="width: 50px;"></th>
@@ -141,7 +141,7 @@
                                             </select>
                                         </td>
                                         <td class="py-3">
-                                            <input type="number" name="articles[0][quantite]" class="form-control form-control-lg border-0 bg-white text-center fw-black text-dark fs-5 qte-input rounded-3 shadow-sm" value="1" min="0.1" step="0.1" required>
+                                            <input type="number" name="articles[0][quantite]" class="form-control form-control-lg border-0 bg-white text-center fw-black text-dark fs-5 qte-input rounded-3 shadow-sm" value="1" min="0.1" step="0.1" required style="min-width: 90px; width: 100%;">
                                         </td>
                                         <td class="py-3 text-end text-muted fw-bold">
                                             <span class="unit-price">0</span> F
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </select>
                 </td>
                 <td class="py-3">
-                    <input type="number" name="articles[${articleCount}][quantite]" class="form-control form-control-lg border-0 bg-white text-center fw-black text-dark fs-5 qte-input rounded-3 shadow-sm" value="1" min="0.1" step="0.1" required>
+                    <input type="number" name="articles[${articleCount}][quantite]" class="form-control form-control-lg border-0 bg-white text-center fw-black text-dark fs-5 qte-input rounded-3 shadow-sm" value="1" min="0.1" step="0.1" required style="min-width: 90px; width: 100%;">
                 </td>
                 <td class="py-3 text-end text-muted fw-bold">
                     <span class="unit-price">0</span> F
@@ -579,6 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
     .table .form-control, .table .form-select { min-height: 56px !important; padding-top: 14px !important; padding-bottom: 14px !important; font-size: 1.05rem !important; }
+    .qte-input { min-width: 90px !important; width: 100% !important; padding-left: 4px !important; padding-right: 4px !important; }
     body { background-color: #f3f4f6; }
     .bg-light { background-color: #f8fafc !important; }
     .bg-light-subtle { background-color: #f1f5f9 !important; }
