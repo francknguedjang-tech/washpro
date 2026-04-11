@@ -14,36 +14,37 @@
     </div>
 
     {{-- Barre de filtrage pour affiner la recherche --}}
-    <div class="card border-0 shadow-sm mb-3" style="border-radius: 1.5rem;">
+    {{-- ======================================================= --}}
+    {{-- ZONE DE RECHERCHE INSTANTANÉE PAR CODE DE RETRAIT      --}}
+    {{-- ======================================================= --}}
+    <div class="card border-0 shadow mb-3" style="border-radius: 1.5rem; border-left: 4px solid #4361ee !important;">
         <div class="card-body p-4">
-            <form action="{{ route('depots.index') }}" method="GET" class="row g-3 align-items-end">
-                <div class="col-md-5">
-                    <label class="form-label small fw-bold text-muted text-uppercase">Recherche Client / Réf</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-0"><i class="bi bi-search text-primary"></i></span>
-                        <input type="text" name="search" class="form-control bg-light border-0 py-2" placeholder="Nom, Téléphone ou Référence..." value="{{ request('search') }}">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted text-uppercase">Statut</label>
-                    <select name="status" class="form-select bg-light border-0 py-2 fw-medium">
-                        <option value="">Tous les statuts</option>
-                        <option value="en cours" {{ request('status') == 'en cours' ? 'selected' : '' }}>En cours</option>
-                        <option value="pret" {{ request('status') == 'pret' ? 'selected' : '' }}>Prêt</option>
-                        <option value="recuperer" {{ request('status') == 'recuperer' ? 'selected' : '' }}>Récupéré</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small fw-bold text-muted text-uppercase">Date</label>
-                    <input type="date" name="date" class="form-control bg-light border-0 py-2 text-muted fw-medium" value="{{ request('date') }}">
-                </div>
-                <div class="col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary fw-bold px-3 py-2 rounded-3 w-100 shadow-sm"><i class="bi bi-funnel-fill me-1"></i> Filtrer</button>
-                    <a href="{{ route('depots.index') }}" class="btn btn-light fw-bold px-3 py-2 rounded-3 text-muted" title="Réinitialiser"><i class="bi bi-arrow-clockwise"></i></a>
-                </div>
-            </form>
+            <label class="form-label fw-bold text-primary mb-2">
+                <i class="bi bi-qr-code-scan me-2"></i> Recherche par Code de Retrait
+            </label>
+            <div class="input-group input-group-lg shadow-sm" style="max-width: 500px;">
+                <span class="input-group-text bg-primary text-white border-0 fw-black px-4" style="letter-spacing:2px; font-size:1.1rem;">WP-</span>
+                <input type="text"
+                       id="liveCodeSearch"
+                       class="form-control border-0 fw-bold text-primary bg-light"
+                       placeholder="Tapez le code... (ex: A8KX2)"
+                       maxlength="10"
+                       style="text-transform:uppercase; letter-spacing: 3px; font-size: 1.2rem;"
+                       autocomplete="off">
+                <span class="input-group-text bg-light border-0" id="searchSpinner">
+                    <i class="bi bi-search text-muted" id="searchIcon"></i>
+                </span>
+            </div>
+            <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle me-1"></i>Résultat affiché instantanément dès la saisie.</small>
+
+            {{-- Carte résultat instantanée --}}
+            <div id="liveSearchResult" class="mt-3 d-none">
+                {{-- Remplie dynamiquement par JavaScript --}}
+            </div>
         </div>
     </div>
+
+
 
     <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 24px;">
         <div class="card-body p-0">
@@ -53,6 +54,7 @@
                     <thead class="bg-light">
                         <tr class="text-muted small">
                             <th class="ps-4 py-3">REF.</th>
+                            <th class="py-3">CODE RETRAIT</th>
                             <th class="py-3">DATE</th>
                             <th class="py-3">CLIENT</th>
                             <th class="py-3">ARTICLES</th>
@@ -66,6 +68,9 @@
                         @forelse($depots as $depot)
                         <tr class="border-bottom border-light">
                             <td class="ps-4 py-3 fw-bold text-primary">{{ $depot->reference }}</td>
+                            <td class="py-3">
+                                <span class="badge px-3 py-2 rounded-pill fw-bold" style="background: #eef2ff; color: #4361ee; font-family: monospace; font-size: 0.9rem; letter-spacing: 2px;">{{ $depot->code_retrait ?? '-' }}</span>
+                            </td>
                             <td class="py-3 text-muted small">{{ \Carbon\Carbon::parse($depot->date_depot)->format('d/m/Y H:i') }}</td>
                             <td class="py-3">
                                 <div class="fw-bold text-dark">{{ $depot->client->nom ?? 'Inconnu' }} {{ $depot->client->prenom ?? '' }}</div>
@@ -149,7 +154,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 mb-2 d-block opacity-25"></i>
                                 Aucun dépôt trouvé.
                             </td>
@@ -181,8 +186,139 @@
 </style>
 
 <script>
+// ================================================================
+// RECHERCHE INSTANTANÉE PAR CODE DE RETRAIT
+// ================================================================
+document.addEventListener('DOMContentLoaded', function() {
+    const input      = document.getElementById('liveCodeSearch');
+    const resultBox  = document.getElementById('liveSearchResult');
+    const icon       = document.getElementById('searchIcon');
+    let debounceTimer;
+
+    const statColors = {
+        'en cours': { bg: '#fff8e1', color: '#f59e0b', label: 'En cours' },
+        'pret':     { bg: '#e8f5e9', color: '#16a34a', label: 'Prêt ✅' },
+        'recuperer':{ bg: '#e3f2fd', color: '#2563eb', label: 'Récupéré' },
+    };
+    const payColors = {
+        'payé':   { bg: '#e8f5e9', color: '#16a34a' },
+        'partiel':{ bg: '#fff8e1', color: '#d97706' },
+        'default':{ bg: '#fef2f2', color: '#dc2626' },
+    };
+
+    function setLoading(loading) {
+        if (loading) {
+            icon.className = 'spinner-border spinner-border-sm text-primary';
+        } else {
+            icon.className = 'bi bi-search text-muted';
+        }
+    }
+
+    function showResult(depot) {
+        const stat   = statColors[depot.etat] || { bg: '#f1f5f9', color: '#64748b', label: depot.etat };
+        const pay    = payColors[depot.etat_paiement] || payColors['default'];
+        const arts   = depot.articles.join(', ');
+
+        resultBox.innerHTML = `
+            <div class="card border-0 shadow-lg animate__animated animate__fadeIn" style="border-radius:16px; border-left: 5px solid ${stat.color} !important;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <span class="badge px-3 py-2 fw-bold rounded-pill" style="background:#eef2ff; color:#4361ee; font-family:monospace; font-size:1rem; letter-spacing:3px;">${depot.code_retrait}</span>
+                                <span class="badge px-3 py-2 rounded-pill fw-bold" style="background:${stat.bg}; color:${stat.color};">${stat.label}</span>
+                                <span class="badge px-3 py-2 rounded-pill fw-bold" style="background:${pay.bg}; color:${pay.color};">${(depot.etat_paiement).toUpperCase()}</span>
+                            </div>
+                            <h5 class="fw-black text-dark mb-1">${depot.client}</h5>
+                            <p class="text-muted small mb-0"><i class="bi bi-telephone me-1"></i>${depot.telephone}</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-muted">Réf. <strong class="text-primary">${depot.reference}</strong></div>
+                            <div class="small text-muted mt-1"><i class="bi bi-calendar me-1"></i>Dépôt : ${depot.date_depot}</div>
+                            <div class="small text-muted"><i class="bi bi-clock me-1"></i>Retrait prévu : ${depot.date_retrait}</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-6">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">Articles</div>
+                            <div class="fw-semibold text-dark">${arts || 'Aucun article'}</div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">Total</div>
+                            <div class="fw-black text-dark" style="font-size:1.2rem;">${depot.prix_total} F</div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">Reste à payer</div>
+                            <div class="fw-black" style="font-size:1.2rem; color:${pay.color};">${depot.reste_a_payer} F</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4 flex-wrap">
+                        <a href="${depot.url_detail}" class="btn btn-primary fw-bold rounded-pill px-4">
+                            <i class="bi bi-eye me-2"></i>Voir le Dépôt
+                        </a>
+                        <a href="${depot.url_facture}" target="_blank" class="btn btn-outline-primary fw-bold rounded-pill px-4">
+                            <i class="bi bi-printer me-2"></i>Imprimer la Facture
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+        resultBox.classList.remove('d-none');
+    }
+
+    function showNotFound() {
+        resultBox.innerHTML = `
+            <div class="alert alert-warning border-0 rounded-4 d-flex align-items-center gap-3 shadow-sm">
+                <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                <div>
+                    <strong>Aucun dépôt trouvé</strong><br>
+                    <small>Vérifiez le code de retrait saisi. Il est inscrit sur la facture remise au client.</small>
+                </div>
+            </div>
+        `;
+        resultBox.classList.remove('d-none');
+    }
+
+    input.addEventListener('input', function() {
+        const code = this.value.trim().toUpperCase();
+        clearTimeout(debounceTimer);
+
+        if (code.length < 2) {
+            resultBox.classList.add('d-none');
+            resultBox.innerHTML = '';
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+
+        debounceTimer = setTimeout(() => {
+            fetch(`{{ route('depots.rechercheCode') }}?code=${encodeURIComponent(code)}`, {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                setLoading(false);
+                if (data.depot) {
+                    showResult(data.depot);
+                } else {
+                    showNotFound();
+                }
+            })
+            .catch(() => { setLoading(false); });
+        }, 300);
+    });
+});
+</script>
+
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     const statusLinks = document.querySelectorAll('.ajax-status-change');
+
     
     statusLinks.forEach(link => {
         link.addEventListener('click', function(e) {

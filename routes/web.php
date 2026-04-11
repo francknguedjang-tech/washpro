@@ -123,6 +123,7 @@ Route::middleware(['auth'])->group(function() {
 
         // Dépôts (Général)
         Route::get('/admin/depots', [DepotController::class, 'index'])->name('depots.index');
+        Route::get('/api/depots/recherche-code', [DepotController::class, 'rechercheParCode'])->name('depots.rechercheCode');
         Route::get('/admin/depots/nouveau',[DepotController::class, 'create'])->name('depots.create');
         Route::post('/admin/depots/store', [DepotController::class, 'store'])->name('depots.store');
         Route::get('/admin/depots/{id}', [DepotController::class, 'show'])->name('depots.show');

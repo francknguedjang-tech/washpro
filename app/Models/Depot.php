@@ -18,7 +18,8 @@ class Depot extends Model
         'client_id',
         'receptionniste_id',
         'date_retrait_prevue',
-        'etat_paiement'
+        'etat_paiement',
+        'code_retrait'
     ];
 
     public function getTotalPoidsAttribute()

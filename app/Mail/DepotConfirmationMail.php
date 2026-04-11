@@ -16,15 +16,13 @@ class DepotConfirmationMail extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public $depot;
-    public $codeAcces;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(depot $depot, $codeAcces = null)
+    public function __construct(Depot $depot)
     {
         $this->depot = $depot;
-        $this->codeAcces = $codeAcces;
     }
 
     /**

@@ -6,7 +6,7 @@ use App\Models\Service;
 use App\Models\Depot;
 use App\Models\User;
 use App\Models\Linge;
-use App\Models\Code_acces;
+
 use App\Mail\DepotConfirmationMail;
 use App\Mail\DepotStatusUpdatedMail;
 use App\Mail\PaiementRecuMail;
@@ -40,6 +40,10 @@ class DepotController extends Controller
         }
         if ($request->filled('status')) {
             $query->where('etat', $request->status);
+        }
+        // Recherche par Code de Retrait (prioritaire et directe)
+        if ($request->filled('code_retrait')) {
+            $query->where('code_retrait', 'LIKE', '%' . strtoupper(trim($request->code_retrait)) . '%');
         }
         if ($request->filled('search')) {
             $search = $request->search;
@@ -238,7 +242,17 @@ class DepotController extends Controller
                 $totalDepot += $montantLigne;
             }
 
-            $depot->update(['prix_total' => $totalDepot]);
+            // Génération du code de retrait UNIQUE pour ce dépôt
+            $codeRetrait = 'WP-' . strtoupper(Str::random(5));
+            // S'assurer de l'unicité
+            while (Depot::where('code_retrait', $codeRetrait)->exists()) {
+                $codeRetrait = 'WP-' . strtoupper(Str::random(5));
+            }
+            
+            $depot->update([
+                'prix_total' => $totalDepot,
+                'code_retrait' => $codeRetrait
+            ]);
 
             // Enregistrement d'un paiement immédiat si fourni
             if ($request->filled('montant_paye') && $request->montant_paye > 0) {
@@ -265,53 +279,39 @@ class DepotController extends Controller
                 }
             }
 
-            $client = User::find($request->client_id);
-            $codeStr = null;
-            if (!$client->password_changed) {
-                $code = Code_acces::where('user_id', $client->id)->where('is_used', false)->first();
-                if (!$code) {
-                    $codeStr = strtoupper(Str::random(6));
-                    Code_acces::create([
-                        'user_id' => $client->id,
-                        'code' => $codeStr,
-                        'is_used' => false
-                    ]);
-                } else {
-                    $codeStr = $code->code;
-                }
-            }
-
-            if ($client->email) {
-                try {
-                    Mail::to($client->email)->queue(new DepotConfirmationMail($depot, $codeStr));
-                    
-                    // Si un paiement initial a été effectué
-                    $montantPaye = floatval($request->montant_paye ?? 0);
-                    if ($montantPaye > 0) {
-                        $depot->refresh();
-                        Mail::to($client->email)->queue(new PaiementRecuMail($depot, $montantPaye, $request->mode_paiement));
-                    }
-                } catch (\Exception $mailException) {
-                    // Log the error but don't fail the transaction
-                    \Log::error("Failed to send Emails for Depot : " . $mailException->getMessage());
-                }
-            }
-
             DB::commit();
 
-            // Notification for the client
-            \App\Models\Notification::create([
-                'user_id' => $depot->client_id,
-                'message' => 'Votre dépôt #' . str_pad($depot->id, 5, '0', STR_PAD_LEFT) . ' a bien été enregistré. Merci de votre confiance !',
-                'date_envoi' => now(),
-                'lu' => false,
-            ]);
+            // Actions après-vente (Post-Commit) pour améliorer la performance
+            try {
+                $client = User::find($request->client_id);
+                if ($client && $client->email) {
+                    // Envoi du mail de confirmation avec le code de retrait intégré dans le dépôt
+                    Mail::to($client->email)->queue(new DepotConfirmationMail($depot));
+                    
+                    // Si un paiement initial a été effectué
+                    if (isset($montantPaye) && $montantPaye > 0) {
+                        Mail::to($client->email)->queue(new PaiementRecuMail($depot, $montantPaye, $request->mode_paiement));
+                    }
+                }
 
-            $this->notificationService->sendToAdmins("Nouveau dépôt créé : Dépôt #{$depot->id}");
-            $this->notificationService->sendToTechnicians("Nouveau dépôt à traiter : Nouveau dépôt #{$depot->id} assigné.");
+                // Notification interne pour le client
+                \App\Models\Notification::create([
+                    'user_id' => $depot->client_id,
+                    'message' => 'Votre dépôt #' . str_pad($depot->id, 5, '0', STR_PAD_LEFT) . ' a bien été enregistré. Code de retrait : ' . $codeRetrait,
+                    'date_envoi' => now(),
+                    'lu' => false,
+                ]);
 
-            $dashboardRoute = Auth::user()->role === 'receptionniste' ? 'receptionniste.dashboard' : 'admin.dashboard';
-            return redirect()->route($dashboardRoute)->with('success', 'Dépôt enregistré avec succès !');
+                $this->notificationService->sendToAdmins("Nouveau dépôt créé : Dépôt #{$depot->id}");
+                $this->notificationService->sendToTechnicians("Nouveau dépôt à traiter : Nouveau dépôt #{$depot->id} assigné.");
+
+            } catch (\Exception $postException) {
+                // On log l'erreur mais le dépôt est déjà validé en DB
+                \Log::error("Erreur post-enregistrement dépôt #{$depot->id} : " . $postException->getMessage());
+            }
+
+            // Redirection vers la facture pour impression immédiate
+            return redirect()->route('depots.facture', $depot->id)->with('success', 'Dépôt enregistré avec succès ! Veuillez imprimer le reçu.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -360,5 +360,44 @@ class DepotController extends Controller
     {
         $depot = Depot::with(['client', 'linges.service', 'paiements', 'receptionniste'])->findOrFail($id);
         return view('admin.depots.facture', compact('depot'));
+    }
+
+    /**
+     * Recherche instantanée d'un dépôt par son code de retrait (AJAX).
+     */
+    public function rechercheParCode(Request $request)
+    {
+        $code = strtoupper(trim($request->input('code', '')));
+
+        if (strlen($code) < 2) {
+            return response()->json(['depot' => null]);
+        }
+
+        $depot = Depot::with(['client', 'linges.service', 'paiements'])
+            ->where('code_retrait', 'LIKE', "%{$code}%")
+            ->first();
+
+        if (!$depot) {
+            return response()->json(['depot' => null]);
+        }
+
+        return response()->json([
+            'depot' => [
+                'id'            => $depot->id,
+                'reference'     => $depot->reference,
+                'code_retrait'  => $depot->code_retrait,
+                'etat'          => $depot->etat,
+                'etat_paiement' => $depot->etat_paiement,
+                'prix_total'    => number_format($depot->prix_total, 0, ',', ' '),
+                'reste_a_payer' => number_format($depot->reste_a_payer, 0, ',', ' '),
+                'date_depot'    => \Carbon\Carbon::parse($depot->date_depot)->format('d/m/Y H:i'),
+                'date_retrait'  => \Carbon\Carbon::parse($depot->date_retrait_prevue)->format('d/m/Y H:i'),
+                'client'        => $depot->client ? $depot->client->nom . ' ' . $depot->client->prenom : 'Inconnu',
+                'telephone'     => $depot->client->telephone ?? '-',
+                'articles'      => $depot->linges->map(fn($l) => $l->quantite . 'x ' . ($l->service->libelle ?? '')),
+                'url_facture'   => route('depots.facture', $depot->id),
+                'url_detail'    => route('depots.show', $depot->id),
+            ]
+        ]);
     }
 }

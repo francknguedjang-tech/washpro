@@ -105,6 +105,7 @@
         </div>
         <div class="normal mb-3">
             <div class="mb-1"><span class="font-bold">Facture N°:</span> {{ $depot->reference }}</div>
+            <div class="mb-1"><span class="font-bold">Code Retrait:</span> <span style="font-size: 1.2rem; background: #eee; padding: 2px 5px; border-radius: 3px;">{{ $depot->code_retrait }}</span></div>
             <div class="mb-1"><span class="font-bold">Date:</span> {{ now()->format('d/m/Y H:i') }}</div>
             <div class="mb-1"><span class="font-bold">Client:</span> {{ $depot->client->prenom ?? '' }} {{ $depot->client->nom ?? '' }}</div>
             <div class="mb-1"><span class="font-bold">Tel:</span> {{ $depot->client->telephone ?? 'N/A' }}</div>

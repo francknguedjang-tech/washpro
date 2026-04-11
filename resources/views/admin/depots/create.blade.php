@@ -240,13 +240,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
 
-            // Empêcher le double clic
-            submitBtn.disabled = true;
-            btnText.innerText = "TRAITEMENT EN COURS...";
-            btnSpinner.classList.remove('d-none');
-            btnIcon.classList.add('d-none');
         });
     }
+
+    // Pro-fix : Réinitialiser le bouton si l'utilisateur revient en arrière (Back button) 
+    // ou si la page est restaurée depuis le cache du navigateur.
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            submitBtn.disabled = false;
+            btnText.innerText = "VALIDER LE DÉPÔT";
+            btnSpinner.classList.add('d-none');
+            btnIcon.classList.remove('d-none');
+        }
+    });
 
     let articleCount = 1;
     const tableBody = document.querySelector('#articlesTable tbody');

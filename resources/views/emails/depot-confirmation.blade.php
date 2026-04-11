@@ -24,32 +24,33 @@
         <p>Bonjour <strong>{{ $depot->client->prenom }}</strong>,</p>
         <p>Votre dépôt a été enregistré avec succès chez WashPro.</p>
         
-        @if($codeAcces)
-            <p>C'est votre première connexion ! Voici votre code d'accès temporaire pour suivre l'état de vos dépôts :</p>
-            <div class="code-box">{{ $codeAcces }}</div>
-            <p>Utilisez ce code pour vous connecter à votre espace client.</p>
-        @endif
+        <div class="code-box">
+            <small style="display:block; font-size: 0.8rem; letter-spacing: normal; margin-bottom: 5px;">CODE DE RETRAIT</small>
+            {{ $depot->code_retrait }}
+        </div>
+
+        <p style="text-align: center; font-style: italic; font-size: 0.9rem;">
+            ⚠️ <strong>Important :</strong> Présentez ce code (ou confiez-le à la personne de votre choix) pour retirer votre linge en toute sécurité.
+        </p>
 
         <div class="info-grid">
             <div class="info-item">
-                <div class="info-label">Date de Dépôt</div>
-                <div class="info-value">{{ \Carbon\Carbon::parse($depot->date_depot)->format('d/m/Y') }}</div>
+                <div class="info-label">Référence Dépôt</div>
+                <div class="info-value">#{{ str_pad($depot->id, 5, '0', STR_PAD_LEFT) }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Retrait Prévu</div>
                 <div class="info-value">{{ \Carbon\Carbon::parse($depot->date_retrait_prevue)->format('d/m/Y H:i') }}</div>
             </div>
             <div class="info-item">
-                <div class="info-label">Service</div>
-                <div class="info-value">{{ $depot->service->libelle }}</div>
+                <div class="info-label">Articles</div>
+                <div class="info-value">{{ $depot->linges->count() }} vêtement(s)</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Total à payer</div>
                 <div class="info-value">{{ number_format($depot->prix_total, 0, ',', ' ') }} FCFA</div>
             </div>
         </div>
-
-        <a href="{{ url('/login') }}" class="btn">Accéder à mon espace</a>
     </div>
     <div class="footer">
         <p>&copy; {{ date('Y') }} WashPro. Tous droits réservés.</p>
